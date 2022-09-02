@@ -1,5 +1,5 @@
 var frame=0, followDirection=true;
-var snakeEating = new Audio('./projects/snake/eatingSound.mp3');
+var snakeEating = new Audio('./projects/Snake/eatingSound.mp3');
 class Snake {
 	constructor() {
 		//init class		
@@ -104,11 +104,7 @@ class Snake {
 				
 			}						
 			frame=0			
-		} 
-					
-		
-   		//Now runner does this  
-   		//comprova segona posicio si es no ens movem
-   		//comprovar posicio seguent si poma afegim, si cos o pared perdem		
+		}		
+   		
 	} 	
 }
