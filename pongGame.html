@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="index.css" />	
+	<title>Pong</title>
+</head>
+<body>
+	<ul id="nav">
+		<li id="home"><a href="index.html">Home</a></li>
+		<li id="projects" class="active">
+			<a href="">Projects</a>							
+			<ul>	
+				<li><a class="li-list" href="pongGame.html">Pong</a>
+				<li><a class="li-list" href="snakeGame.html">Snake</a>	
+				<li><a  class="li-list" href="Oscilum.html">Oscilum</a>	
+				<li><a class="li-list" href="">More Coming Soon...</a>			
+			</ul>	
+		</li>
+		<li id="contact"><a  href="contact.html">Contact</a></li>
+	</ul>
+	<div id="load">words</div>
+	<div class="gameContainer" id="gameContainer">
+		<canvas class="gameContainer" id="canvas" style="background:  0% 0% / contain rgb(20, 21, 31);"></canvas>
+	</div>
+	<div class="bigTextContainer">
+		<div class="smallTextContainer">
+			<p>After having trouble with the collision system between a moving circle and a moving rectangle I decided that it was a good opportunity to learn how to use a physics engine. In this case im using Matter.js made by liabru. The main reasons are that it has a pretty good documentation and community. Also I decided to add some sounds and to use a custom font to learn how to do different things. The font is press start 2p made by Cody "CodeMan38" Boisclair (cody@zone38.net)</p>
+		</div>
+		<div class="vl"></div>		
+		<div class="textContainer" style="margin: 15px;">		
+			<p> Player 1 controls the right paddle with the up and down arrows. </p>
+			<p>	In the 2 players mode Player 2 controls the left paddle with the W and S keys. </p>
+		</div>
+
+	</div>	
+	<div class="bigTextContainer">
+		<div class="textContainer" style="text-align: center;">
+			<h3> Links </h3>
+			<p>Matter.js <a href="https://github.com/liabru/matter-js">Github</a></p>			
+			<p>Cody "CodeMan83" Boisclair <a href="https://github.com/codeman38/PressStart2P">Github</a></p>
+		</div>
+	</div>
+
+</body>
+</html>
+<script type="text/javascript" src="./jquery.js"></script>
+<script type="text/javascript" src="./header.js"></script>
+<script type="text/javascript" src="./projects/Pong/matter.js"></script>
+<script type="text/javascript" src="./projects/Pong/TextDisplay.js" defer></script>
+<script type="text/javascript" src="./projects/Pong/Ball.js" defer></script>
+<script type="text/javascript" src="./projects/Pong/Paddle.js" defer></script>
+<script type="text/javascript" src="./projects/Pong/MenuScene.js" defer></script>
+<script type="text/javascript" src="./projects/Pong/GameScene.js" defer></script>
