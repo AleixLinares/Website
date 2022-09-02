@@ -1,5 +1,5 @@
 var frame=0, followDirection=true;
-var snakeEating = new Audio('./projects/Snake/eatingSound.mp3');
+var snakeEating = new Audio('./projects/Snake/eatingSound.wav');
 class Snake {
 	constructor() {
 		//init class		
