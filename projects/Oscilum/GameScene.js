@@ -1,12 +1,14 @@
 var frameTime = 1000/60;
 var prevTime=0;
 var currentTime;
-var deltaTime=0;
+var deltaTime=0, timeAnimation=0, deathTime=0;
 var endGame=false;	
 var endLoop=false;
-var drawLine=false, touchingGround=false, hookDeployed=false, moving=false;
+var drawLine=false, touchingGround=false, hookDeployed=false, moving=false, dying=false;
 let renderArray = []
-let runner, render, mouse, hook=null,X1=0,Y1=0,X2=0,Y2=0, projectile=null;
+let runner, render, mouse, hook=null, projectile=null, deathDetector, deathGround, player;
+let deathSound = new Audio("./projects/Oscilum/CasualDeathSound.wav")
+let relX, relY
 
 let windowWidth = window.innerWidth/1.4;
 let windowHeight = window.innerHeight/1.4;
@@ -78,6 +80,9 @@ function gameInit(players, mode) {
 	render.bounds.max.x = render.bounds.min.x + render.options.width;
   render.bounds.max.y = render.bounds.min.y + render.options.height;
 
+  relX = render.bounds.max.x/render.bounds.min.x
+  relY = render.bounds.max.y/render.bounds.min.y
+
 	gameContainer=document.getElementById("gameContainer")
 	gameContainer.appendChild(canvas);
 
@@ -90,7 +95,15 @@ function gameInit(players, mode) {
 	window.addEventListener("keyup", keyup, false)
 
 	player = new Player(650,200, 20, "red")
-	
+	//player= new Player(5700,1400,20, "blue")
+	let detector = Matter.Bodies.rectangle(650,200+25,5,1,{
+		isSensor: true,
+		label: "detector",
+		render: {
+			visible: false
+		}
+	});
+	renderArray.push(detector)
 	var scenarioOptions = {
 		isStatic:true,
 		label: "scenario",
@@ -98,7 +111,11 @@ function gameInit(players, mode) {
 			fillStyle: "white",
 			strokeStyle: "black",
 			lineWidth: 0
-		}};	
+			},
+		collisionFilter: {
+				group: 1
+			}
+		};	
 		var scenarioOptions2 = {
 		isStatic:true,
 		label: "scenario",
@@ -106,12 +123,16 @@ function gameInit(players, mode) {
 			fillStyle: "orange",
 			strokeStyle: "black",
 			lineWidth: 0
-		}};	
+		},
+		collisionFilter: {
+				group: 1
+			}
+		};		
 	let ground = Matter.Bodies.rectangle(700,780,500,280,scenarioOptions);
 	renderArray.push(ground)
-	let roof = Matter.Bodies.rectangle(3200,200,5000,300,scenarioOptions);
+	let roof = Matter.Bodies.rectangle(3200,50,5000,600,scenarioOptions);
 	renderArray.push(roof)
-	let roof2 = Matter.Bodies.rectangle(1*350,200,500,300,scenarioOptions);
+	let roof2 = Matter.Bodies.rectangle(1*350,50,500,600,scenarioOptions);
 	renderArray.push(roof2)
 	let ground2 = Matter.Bodies.rectangle(700+600,780,500,280,scenarioOptions);
 	renderArray.push(ground2)
@@ -119,19 +140,54 @@ function gameInit(players, mode) {
 	renderArray.push(ground3)
 	let support = Matter.Bodies.rectangle(700+600+550,350,100,50,scenarioOptions);
 	renderArray.push(support)
-	let roof3 = Matter.Bodies.rectangle(3500,400,500,300,scenarioOptions);
+	let roof3 = Matter.Bodies.rectangle(3500,250,500,600,scenarioOptions);
 	renderArray.push(roof3)
 	let ground4 = Matter.Bodies.rectangle(4000,1000,500,280,scenarioOptions);
 	renderArray.push(ground4)
 	let roof4 = Matter.Bodies.rectangle(4900,500,300,1000,scenarioOptions);
 	renderArray.push(roof4)
-	let roof5 = Matter.Bodies.rectangle(4900,1750,300,1000,scenarioOptions2);
+	let roof5 = Matter.Bodies.rectangle(4900,1750,300,1000,scenarioOptions);
 	renderArray.push(roof5)
-	let ground5 = Matter.Bodies.rectangle(5700,1500,700,280,scenarioOptions2);
+	let ground5 = Matter.Bodies.rectangle(5700,1500,700,280,{
+		isStatic:true,
+		label: "finish",
+		render: {	
+			fillStyle: "white",
+			strokeStyle: "black",
+			lineWidth: 0,	
+			sprite: {
+						texture: "./projects/Oscilum/finish.png",
+						yOffset: 0.84
+						//yScale: 2.1
+					} 
+				}	
+	});
 	renderArray.push(ground5)
+	let ground6 = Matter.Bodies.rectangle(5700,1500,700,280,scenarioOptions);
+	renderArray.push(ground6)
+	deathGround = Matter.Bodies.rectangle(3000, 1500, 10000,200, {
+		isSensor: true,
+		isStatic:true,
+		render: {	
+			fillStyle: "yellow",
+			strokeStyle: "black",
+			lineWidth: 1,
+			visible: false
+			},
+		collisionFilter: {
+				group: 0,
+				category: "0x0002",
+				mask: "0x0004"
+			}	
+	})
+	renderArray.push(deathGround)
+	deathDetector = Matter.Detector.create({
+		bodies: [player.body,deathGround]
+	});
 
 	canvas.addEventListener('mousedown', function() { 
 
+		Matter.Render.startViewTransform(render)
 		if(hook)  {
 			Matter.Composite.remove(engine.world,hook);
 			hookDeployed=false;
@@ -152,11 +208,13 @@ function gameInit(players, mode) {
 				fillStyle: "red"	
 			},
 			collisionFilter: {
-				group: -1
+				group: -1,
+				//category: "0x0004"
+				//mask: "0x0002"
 			}		
 		})
 		var shiftX = (player.body.position.x-windowWidth / 2)
-		var shiftY = (player.body.position.y-windowHeight / 2)		
+		var shiftY = (player.body.position.y-windowHeight / 2)	
 		var velocity = Matter.Vector.mult(Matter.Vector.normalise({x:(mouse.position.x+shiftX)-(player.body.position.x), y:mouse.position.y+shiftY-player.body.position.y}),25)		
 		Matter.Body.setVelocity(projectile, velocity)
 		Matter.Composite.add(engine.world,projectile);
@@ -181,22 +239,21 @@ function gameInit(players, mode) {
 	Matter.Runner.start(runner, engine);
 	Matter.Render.run(render);
 
-	Matter.Events.on(render, 'beforeRender', function() {        
-     	
+	Matter.Events.on(render, 'beforeRender', function() {     
+    
       // center view at player 
 	   	Matter.Bounds.shift(render.bounds,
 	    {
-	        x: (player.body.position.x - windowWidth / 2),
-	        y: (player.body.position.y - windowHeight / 2)
+	        x: (player.body.position.x - (render.bounds.max.x-render.bounds.min.x) / 2),
+	        y: (player.body.position.y - (render.bounds.max.y-render.bounds.min.y) / 2)
 	    });
-
     });
 
 	Matter.Events.on(engine, 'beforeUpdate', function() {
 
 		if(projectile) {
 			var dist = Math.hypot(projectile.position.x-player.body.position.x, projectile.position.y-player.body.position.y)
-			if(dist>=350) {
+			if(dist>=450) {
 				Matter.Composite.remove(engine.world,projectile);
 				projectile=null;
 			}
@@ -213,6 +270,10 @@ function gameInit(players, mode) {
 	    }
 	  }
 });
+	Matter.Events.on(engine, 'afterUpdate', function() {
+
+		if(player)Matter.Body.setPosition(detector, {x:player.body.position.x, y: player.body.position.y+25})
+	});
 
 	Matter.Events.on(engine, "collisionStart", event => {
 		var pairs = event.pairs;
@@ -221,7 +282,6 @@ function gameInit(players, mode) {
     for (var i = 0; i < pairs.length; i++) {
       var pair = pairs[i];        
       if(pair.bodyA.label=="noGravity" || pair.bodyB.label=="noGravity") {
-      	console.log(pair)		
         	if(pair.bodyA.label=="noGravity") {
         		scenarioAux=pair.bodyB;
         		projectileAux=pair.bodyA;
@@ -255,24 +315,38 @@ function gameInit(players, mode) {
 
 	Matter.Events.on(engine, "collisionActive", event => {
 		var pairs = event.pairs;
+		var detectorCollision = false, playerCollision=false;
+
 		for (var i = 0; i < pairs.length; i++) {
-			var pair = pairs[i];   
-			if(pair.bodyA.label=="player" && pair.bodyB.label=="scenario") touchingGround=true 
+			var pair = pairs[i];  			
+			if(pair.bodyA.label=="detector" && pair.bodyB.label=="scenario") {
+				detectorCollision=true
+			}			
+			if((pair.bodyA.label=="player" && pair.bodyB.label=="scenario")||(pair.bodyB.label=="player" && pair.bodyA.label=="scenario")) {
+				playerCollision=true 				
+				
+			}	
+		}
+		if(detectorCollision && playerCollision) {
+			touchingGround=true			
 		}
 	})
 	Matter.Events.on(engine, "collisionEnd", event => {
 		var pairs = event.pairs;
 		for (var i = 0; i < pairs.length; i++) {
-			var pair = pairs[i];   
-			if(pair.bodyA.label=="player" && pair.bodyB.label=="scenario") touchingGround=false 
+			var pair = pairs[i];
+			if((pair.bodyA.label=="player" && pair.bodyB.label=="scenario")||(pair.bodyB.label=="player" && pair.bodyA.label=="scenario")) {
+				touchingGround=false 				
+			}
 		}		
 	})	
 
 	Matter.Events.on(render, "afterRender", event => {	
+		Matter.Render.startViewTransform(render)
 		if(drawLine && projectile) {			
 			render.context.beginPath();
-			render.context.moveTo(player.body.position.x-(player.body.position.x-windowWidth / 2), player.body.position.y- (player.body.position.y-windowHeight / 2));
-			render.context.lineTo(projectile.position.x-(player.body.position.x-windowWidth / 2), projectile.position.y- (player.body.position.y-windowHeight / 2));
+			render.context.moveTo(player.body.position.x, player.body.position.y);
+			render.context.lineTo(projectile.position.x, projectile.position.y);
 			render.context.lineWidth = 2;
 			render.context.strokeStyle = "red";
 			render.context.stroke();
@@ -290,11 +364,25 @@ function loop(currentTime) {
 	deltaTime = currentTime - prevTime
 
 	//if(deltaTime > frameTime) {		
-	
-	
+	//console.log(render.bounds)
+	if(state.pressedKeys.S) {
+		Matter.Render.lookAt(render, {
+        min: {y:render.bounds.min.y-20, x:render.bounds.min.x-20},
+        max: {y:render.bounds.max.y+20, x:render.bounds.max.x+20},
+    	});
+		
+	}
+	if(state.pressedKeys.W) {
+		Matter.Render.lookAt(render, {
+        min: {y:render.bounds.min.y+20, x:render.bounds.min.x+20},
+        max: {y:render.bounds.max.y-20, x:render.bounds.max.x-20},
+    	});
+		
+	}
+
 	prevTime = currentTime
 
-	update(deltaTime)
+	update(deltaTime)	
 
 	//console.log(deltaTime + " > "  +frameTime)
 
@@ -306,30 +394,66 @@ function loop(currentTime) {
 
 function update(deltaTime){
 
-	if(!hookDeployed && touchingGround && state.pressedKeys.A && (player.body.velocity.y<0.1 || player.body.velocity.y>-0.1)) {		
-		Matter.Body.setVelocity(player.body,{x:-6,y:0})
-		moving=true;
-	}	
-	if(!hookDeployed && touchingGround && state.pressedKeys.D && (player.body.velocity.y<0.1 || player.body.velocity.y>-0.1)) {
-		Matter.Body.setVelocity(player.body,{x:6,y:0})
-		moving=true;
+	var dyingList = Matter.Detector.collisions(deathDetector)
+	
+	if(dyingList.length!=0) {
+		if(dyingList[0].collided) {			
+			dying=true;
+		}
 	}
-	/*if(!hookDeployed && !touchingGround && state.pressedKeys.A) {		
-		Matter.Body.setVelocity(player.body,{x:-2,y:player.body.velocity.y})
-		moving=true;
-	}	
-	if(!hookDeployed && !touchingGround && state.pressedKeys.D) {
-		Matter.Body.setVelocity(player.body,{x:2,y:player.body.velocity.y})
-		moving=true;
-	}*/
-	if(touchingGround && moving && (!state.pressedKeys.D && !state.pressedKeys.A)) {
-		moving=false	
-		Matter.Body.setVelocity(player.body,{x:0,y:0})
-		Matter.Body.setAngularVelocity(player.body,0)
-	}	
+	if(!dying) {		
+		if(!hookDeployed && touchingGround && state.pressedKeys.A) {	
 
-	if(!hookDeployed && touchingGround && state.pressedKeys.space && (player.body.velocity.y<0.1 || player.body.velocity.y>-0.1)) {		
-		Matter.Body.applyForce(player.body,player.body.position,{x:0,y:-0.04})
+			Matter.Body.setVelocity(player.body,{x:-6,y:0})
+			moving=true;
+		}	
+		if(!hookDeployed && touchingGround && state.pressedKeys.D) {
+			Matter.Body.setVelocity(player.body,{x:6,y:0})
+			moving=true;
+		}
+		/*if(!hookDeployed && !touchingGround && state.pressedKeys.A) {		
+			Matter.Body.setVelocity(player.body,{x:-2,y:player.body.velocity.y})
+			moving=true;
+		}	
+		if(!hookDeployed && !touchingGround && state.pressedKeys.D) {
+			Matter.Body.setVelocity(player.body,{x:2,y:player.body.velocity.y})
+			moving=true;
+		}*/
+		if(touchingGround && moving && (!state.pressedKeys.D && !state.pressedKeys.A)) {
+			moving=false	
+			Matter.Body.setVelocity(player.body,{x:0,y:0})
+			Matter.Body.setAngularVelocity(player.body,0)
+		}	
+
+		if(!hookDeployed && touchingGround && state.pressedKeys.space) {	
+			touchingGround=false 
+			Matter.Body.applyForce(player.body,player.body.position,{x:0,y:-0.04})
+		}
+	}
+	if(dying) {
+		if(deathTime==0) deathSound.play()
+		deathTime+=deltaTime
+		timeAnimation+=deltaTime
+		if(deathTime>500) {
+			dying=false
+			touchingGround=false
+			moving=false
+			hookDeployed=false
+			deathTime=0
+			timeAnimation=0
+			Matter.Composite.remove(engine.world,player.body)
+			player = new Player(650,200, 20, "red")			
+			//Matter.Composite.add(engine.world,player.body)
+			deathDetector = Matter.Detector.create({
+				bodies: [player.body,deathGround]
+			});
+		}
+		else if(timeAnimation>50) {
+			timeAnimation-=50			
+			player.body.render.sprite.xScale-=0.015
+			player.body.render.sprite.yScale-=0.015
+			player.body.render.opacity-=0.1;
+		}
 	}
 	
 }

@@ -5,9 +5,9 @@ class Player {
 		render: {
 				fillStyle: color,	
 				sprite: {
-					texture: "./projects/Oscilum/spriteTest.png",
-					xScale: 2,
-					yScale: 2
+					texture: "./projects/Oscilum/spriteTest2.png",
+					xScale: 40/256,
+					yScale: 40/256
 				} 		
 			},
 		restitution: 0,
@@ -16,7 +16,9 @@ class Player {
 		frictionAir:0.0005,
 		//density: 20,
 		collisionFilter: {
-				group: -1
+				group: 1,
+				category: "0x0004",
+				mask: "0x0002"
 			}				
 		});
 		Matter.Composite.add(engine.world,this.body);	
