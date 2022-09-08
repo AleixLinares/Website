@@ -2,13 +2,10 @@ var frameTime = 1000/60;
 var prevTime=0;
 var currentTime;
 var deltaTime=0, timeAnimation=0, deathTime=0;
-var endGame=false;	
-var endLoop=false;
 var drawLine=false, touchingGround=false, hookDeployed=false, moving=false, dying=false;
 let renderArray = []
 let runner, render, mouse, hook=null, projectile=null, deathDetector, deathGround, player;
 let deathSound = new Audio("./projects/Oscilum/CasualDeathSound.wav")
-let relX, relY
 
 let windowWidth = window.innerWidth/1.4;
 let windowHeight = window.innerHeight/1.4;
@@ -45,6 +42,7 @@ var keyMap = {
 }
 function keydown(event) {
   var key = keyMap[event.keyCode] 
+  console.log(event)
   state.pressedKeys[key] = true 
 }
 function keyup(event) {
@@ -52,7 +50,7 @@ function keyup(event) {
   state.pressedKeys[key] = false
 }
 
-function gameInit(players, mode) {
+function gameInit() {
 
 	renderArray = []
 	runner = Matter.Runner.create();
@@ -61,8 +59,8 @@ function gameInit(players, mode) {
 
 	mouse = Matter.Mouse.create(canvas)
 	
-	windowWidth = window.innerWidth/1.4;
-	windowHeight = window.innerHeight/1.4;
+	windowWidth = canvas.width;
+	windowHeight = canvas.height;
 
 	render = Matter.Render.create({
 		element: document.body,
@@ -71,8 +69,8 @@ function gameInit(players, mode) {
 		options:{
 			wireframes: false,
 			background: "skyblue",			
-			width: windowWidth,
-      height: windowHeight,
+			width: canvas.width,
+      height: canvas.height,
       hasBounds: true
 		}
 	});
@@ -80,16 +78,10 @@ function gameInit(players, mode) {
 	render.bounds.max.x = render.bounds.min.x + render.options.width;
   render.bounds.max.y = render.bounds.min.y + render.options.height;
 
-  relX = render.bounds.max.x/render.bounds.min.x
-  relY = render.bounds.max.y/render.bounds.min.y
-
 	gameContainer=document.getElementById("gameContainer")
 	gameContainer.appendChild(canvas);
 
 	context.clearRect(0,0, canvas.width, canvas.height)	
-
-	endLoop=false;
-	endGame=false;
 
 	window.addEventListener("keydown", keydown, false)
 	window.addEventListener("keyup", keyup, false)
