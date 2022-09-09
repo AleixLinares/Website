@@ -2,10 +2,11 @@ var frameTime = 1000/60;
 var prevTime=0;
 var currentTime;
 var deltaTime=0, timeAnimation=0, deathTime=0;
-var drawLine=false, touchingGround=false, hookDeployed=false, moving=false, dying=false;
+var drawLine=false, touchingGround=false, hookDeployed=false, moving=false, dying=false, win =false;
 let renderArray = []
-let runner, render, mouse, hook=null, projectile=null, deathDetector, deathGround, player;
+let runner, render, mouse, hook=null, projectile=null, detector, deathGround, player,positionDetector, finishGround;
 let deathSound = new Audio("./projects/Oscilum/CasualDeathSound.wav")
+let victorySound = new Audio("./projects/Oscilum/clappingVictoryCut.wav")
 
 let windowWidth = window.innerWidth/1.4;
 let windowHeight = window.innerHeight/1.4;
@@ -41,8 +42,7 @@ var keyMap = {
 
 }
 function keydown(event) {
-  var key = keyMap[event.keyCode] 
-  console.log(event)
+  var key = keyMap[event.keyCode]
   state.pressedKeys[key] = true 
 }
 function keyup(event) {
@@ -52,6 +52,7 @@ function keyup(event) {
 
 function gameInit() {
 
+	win=false
 	renderArray = []
 	runner = Matter.Runner.create();
 
@@ -86,16 +87,16 @@ function gameInit() {
 	window.addEventListener("keydown", keydown, false)
 	window.addEventListener("keyup", keyup, false)
 
-	player = new Player(650,200, 20, "red")
-	//player= new Player(5700,1400,20, "blue")
-	let detector = Matter.Bodies.rectangle(650,200+25,5,1,{
+	//player = new Player(650,200, 20, "red")
+	player= new Player(5000,970,20, "blue")
+	let positionDetector = Matter.Bodies.rectangle(650,200+25,5,1,{
 		isSensor: true,
 		label: "detector",
 		render: {
 			visible: false
 		}
 	});
-	renderArray.push(detector)
+	renderArray.push(positionDetector)
 	var scenarioOptions = {
 		isStatic:true,
 		label: "scenario",
@@ -140,11 +141,12 @@ function gameInit() {
 	renderArray.push(roof4)
 	let roof5 = Matter.Bodies.rectangle(4900,1750,300,1000,scenarioOptions);
 	renderArray.push(roof5)
-	let ground5 = Matter.Bodies.rectangle(5700,1500,700,280,{
+	finishGround = Matter.Bodies.rectangle(5700,1500,700,280,{
 		isStatic:true,
+		isSensor: true,
 		label: "finish",
 		render: {	
-			fillStyle: "white",
+			fillStyle: "red",
 			strokeStyle: "black",
 			lineWidth: 0,	
 			sprite: {
@@ -152,14 +154,20 @@ function gameInit() {
 						yOffset: 0.84
 						//yScale: 2.1
 					} 
-				}	
+				},
+			collisionFilter: {
+				group: 0,
+				category: "0x0002",
+				mask: "0x0004"
+			}	
 	});
-	renderArray.push(ground5)
+	renderArray.push(finishGround)
 	let ground6 = Matter.Bodies.rectangle(5700,1500,700,280,scenarioOptions);
 	renderArray.push(ground6)
 	deathGround = Matter.Bodies.rectangle(3000, 1500, 10000,200, {
 		isSensor: true,
 		isStatic:true,
+		label: "deathGround",
 		render: {	
 			fillStyle: "yellow",
 			strokeStyle: "black",
@@ -173,58 +181,12 @@ function gameInit() {
 			}	
 	})
 	renderArray.push(deathGround)
-	deathDetector = Matter.Detector.create({
-		bodies: [player.body,deathGround]
-	});
+	detector = Matter.Detector.create({
+		bodies: [player.body,deathGround,finishGround]
+	});	
 
-	canvas.addEventListener('mousedown', function() { 
-
-		Matter.Render.startViewTransform(render)
-		if(hook)  {
-			Matter.Composite.remove(engine.world,hook);
-			hookDeployed=false;
-			hook=null
-		}
-		if(projectile) {
-			Matter.Composite.remove(engine.world,projectile);
-			projectile=null;
-		}
-		drawLine=true;
-		projectile = Matter.Bodies.circle(player.body.position.x, player.body.position.y, 3, {
-			label: "noGravity",
-			friction: 0,
-      frictionStatic: 0,
-      frictionAir: 0,
-      restitution: 1,
-      render: {
-				fillStyle: "red"	
-			},
-			collisionFilter: {
-				group: -1,
-				//category: "0x0004"
-				//mask: "0x0002"
-			}		
-		})
-		var shiftX = (player.body.position.x-windowWidth / 2)
-		var shiftY = (player.body.position.y-windowHeight / 2)	
-		var velocity = Matter.Vector.mult(Matter.Vector.normalise({x:(mouse.position.x+shiftX)-(player.body.position.x), y:mouse.position.y+shiftY-player.body.position.y}),25)		
-		Matter.Body.setVelocity(projectile, velocity)
-		Matter.Composite.add(engine.world,projectile);
-	});
-
-	canvas.addEventListener('mouseup', function() { 
-
-		if(hook)  {
-			Matter.Composite.remove(engine.world,hook);
-			hookDeployed=false;
-			hook=null
-		}
-		if(projectile) {
-			Matter.Composite.remove(engine.world,projectile);
-			projectile=null;
-		}
-		drawLine=false;		
-	});
+	canvas.addEventListener('mousedown', shoot);
+	canvas.addEventListener('mouseup', recover);
 	
 
 	Matter.Composite.add(engine.world,renderArray);
@@ -264,7 +226,7 @@ function gameInit() {
 });
 	Matter.Events.on(engine, 'afterUpdate', function() {
 
-		if(player)Matter.Body.setPosition(detector, {x:player.body.position.x, y: player.body.position.y+25})
+		if(player)Matter.Body.setPosition(positionDetector, {x:player.body.position.x, y: player.body.position.y+25})
 	});
 
 	Matter.Events.on(engine, "collisionStart", event => {
@@ -381,19 +343,24 @@ function loop(currentTime) {
 	//console.log("FPS: " +1/deltaTime*1000)
 
 
-	if(!state.pressedKeys.esc) window.requestAnimationFrame(loop)	
+	if(!state.pressedKeys.esc && !win) window.requestAnimationFrame(loop)	
 }
 
 function update(deltaTime){
 
-	var dyingList = Matter.Detector.collisions(deathDetector)
-	
-	if(dyingList.length!=0) {
-		if(dyingList[0].collided) {			
+	var detectorList;
+	if(!dying && !win) detectorList = Matter.Detector.collisions(detector)
+	if(!dying && !win && detectorList.length!=0) {	
+		if((detectorList[0].bodyA.label=="deathGround"|| detectorList[0].bodyB.label=="deathGround") && detectorList[0].collided) {			
 			dying=true;
+		}		
+		if((detectorList[0].bodyA.label=="finish"|| detectorList[0].bodyB.label=="finish") && detectorList[0].collided) {			
+			win=true;
+			victorySound.play()
+		  victory()
 		}
 	}
-	if(!dying) {		
+	if(!dying && !win) {		
 		if(!hookDeployed && touchingGround && state.pressedKeys.A) {	
 
 			Matter.Body.setVelocity(player.body,{x:-6,y:0})
@@ -433,12 +400,13 @@ function update(deltaTime){
 			hookDeployed=false
 			deathTime=0
 			timeAnimation=0
+			Matter.Detector.clear(detector)
 			Matter.Composite.remove(engine.world,player.body)
-			player = new Player(650,200, 20, "red")			
+			player = new Player(650,200, 20, "red")		
+			Matter.Detector.setBodies(detector, [player.body,deathGround,finishGround]);			
+
 			//Matter.Composite.add(engine.world,player.body)
-			deathDetector = Matter.Detector.create({
-				bodies: [player.body,deathGround]
-			});
+
 		}
 		else if(timeAnimation>50) {
 			timeAnimation-=50			
@@ -451,4 +419,70 @@ function update(deltaTime){
 }
 function draw() {
 	
+}
+
+function victory() {
+
+	canvas.removeEventListener('mousedown', shoot)
+	canvas.removeEventListener('mouseup', recover)
+	Matter.Events.off(render)
+	Matter.Events.off(engine)
+	Matter.Render.stop(render);
+ 	Matter.Runner.stop(runner);
+	Matter.Composite.clear(engine.world);
+  Matter.Engine.clear(engine);
+ 	setTimeout(menuInit,1900)
+
+}
+
+
+function recover() { 
+
+		if(hook)  {
+			Matter.Composite.remove(engine.world,hook);
+			hookDeployed=false;
+			hook=null
+		}
+		if(projectile) {
+			Matter.Composite.remove(engine.world,projectile);
+			projectile=null;
+		}
+		drawLine=false;		
+	}
+
+function shoot() { 
+
+	Matter.Render.startViewTransform(render)
+	if(hook)  {
+		Matter.Composite.remove(engine.world,hook);
+		hookDeployed=false;
+		hook=null
+	}
+	if(projectile) {
+		Matter.Composite.remove(engine.world,projectile);
+		projectile=null;
+	}
+	if(!dying) {
+	drawLine=true;
+		projectile = Matter.Bodies.circle(player.body.position.x, player.body.position.y, 3, {
+			label: "noGravity",
+			friction: 0,
+	    frictionStatic: 0,
+	    frictionAir: 0,
+	    restitution: 1,
+	    render: {
+				fillStyle: "red"	
+			},
+			collisionFilter: {
+				group: -1,
+				//category: "0x0004"
+				//mask: "0x0002"
+			}		
+		})
+		var shiftX = (player.body.position.x-windowWidth / 2)
+		var shiftY = (player.body.position.y-windowHeight / 2)	
+		var velocity = Matter.Vector.mult(Matter.Vector.normalise({x:(mouse.position.x+shiftX)-(player.body.position.x), y:mouse.position.y+shiftY-player.body.position.y}),25)		
+		Matter.Body.setVelocity(projectile, velocity)
+		Matter.Composite.add(engine.world,projectile);
+	}
 }

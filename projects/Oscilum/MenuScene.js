@@ -8,6 +8,8 @@ var audio = new Audio('./projects/Pong/navigation.wav');
 function menuInit() {	
 
 	cicle=0
+	decorationCicle1=0
+	timeAnimation=0
 	changedScene=false	
 
 	const canvas = document.getElementById("canvas");
