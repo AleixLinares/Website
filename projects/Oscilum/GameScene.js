@@ -2,9 +2,9 @@ var frameTime = 1000/60;
 var prevTime=0;
 var currentTime;
 var deltaTime=0, timeAnimation=0, deathTime=0;
-var drawLine=false, touchingGround=false, hookDeployed=false, moving=false, dying=false, win =false;
+var drawLine=false, touchingGround=false, hookDeployed=false, moving=false, dying=false, win =false, lookoutCollision=false, looked=false;
 let renderArray = []
-let runner, render, mouse, hook=null, projectile=null, detector, deathGround, player,positionDetector, finishGround;
+let runner, render, mouse, hook=null, projectile=null, detector, deathGround, player,positionDetector, finishGround, roof5, ground6, lookout1;
 let deathSound = new Audio("./projects/Oscilum/CasualDeathSound.wav")
 let victorySound = new Audio("./projects/Oscilum/clappingVictoryCut.wav")
 
@@ -17,6 +17,7 @@ var state = {
     up: false,
     down: false,
     enter: false,
+    E: false,
     W: false,
     S: false,
     A: false,
@@ -33,6 +34,7 @@ var keyMap = {
   40: 'down',
   13: 'enter',
   87: 'W',
+  69: 'E',
   83: 'S',
   65: 'A',
   68: 'D',
@@ -76,8 +78,12 @@ function gameInit() {
 		}
 	});
 
-	render.bounds.max.x = render.bounds.min.x + render.options.width;
-  render.bounds.max.y = render.bounds.min.y + render.options.height;
+	//render.bounds.max.x = render.bounds.min.x + render.options.width;
+  //render.bounds.max.y = render.bounds.min.y + render.options.height;
+  Matter.Render.lookAt(render, {
+    min: {y:render.bounds.min.y-150, x:render.bounds.min.x-150},
+    max: {y:render.bounds.max.y+150, x:render.bounds.max.x+150},
+	});
 
 	gameContainer=document.getElementById("gameContainer")
 	gameContainer.appendChild(canvas);
@@ -87,8 +93,8 @@ function gameInit() {
 	window.addEventListener("keydown", keydown, false)
 	window.addEventListener("keyup", keyup, false)
 
-	//player = new Player(650,200, 20, "red")
-	player= new Player(5000,970,20, "blue")
+	player = new Player(650,200, 20, "red")
+	//player= new Player(4000,970,20, "blue")
 	let positionDetector = Matter.Bodies.rectangle(650,200+25,5,1,{
 		isSensor: true,
 		label: "detector",
@@ -109,7 +115,7 @@ function gameInit() {
 				group: 1
 			}
 		};	
-		var scenarioOptions2 = {
+	var scenarioOptions2 = {
 		isStatic:true,
 		label: "scenario",
 		render: {
@@ -139,19 +145,30 @@ function gameInit() {
 	renderArray.push(ground4)
 	let roof4 = Matter.Bodies.rectangle(4900,500,300,1000,scenarioOptions);
 	renderArray.push(roof4)
-	let roof5 = Matter.Bodies.rectangle(4900,1750,300,1000,scenarioOptions);
+	roof5 = Matter.Bodies.rectangle(4900,1750,300,1000,{
+		isStatic:true,
+		label: "deathGround",
+		render: {
+			fillStyle: "red",
+			strokeStyle: "black",
+			lineWidth: 0
+			},
+		collisionFilter: {
+				group: 1
+			}
+		});
 	renderArray.push(roof5)
-	finishGround = Matter.Bodies.rectangle(5700,1500,700,280,{
+	finishGround = Matter.Bodies.rectangle(5700,1200,700,1,{
 		isStatic:true,
 		isSensor: true,
-		label: "finish",
+		label: "decoration",
 		render: {	
 			fillStyle: "red",
 			strokeStyle: "black",
 			lineWidth: 0,	
 			sprite: {
 						texture: "./projects/Oscilum/finish.png",
-						yOffset: 0.84
+						yOffset: 0
 						//yScale: 2.1
 					} 
 				},
@@ -162,7 +179,18 @@ function gameInit() {
 			}	
 	});
 	renderArray.push(finishGround)
-	let ground6 = Matter.Bodies.rectangle(5700,1500,700,280,scenarioOptions);
+	ground6 = Matter.Bodies.rectangle(5700,1500,600,280,{
+		isStatic:true,
+		label: "finish",
+		render: {
+			fillStyle: "white",
+			strokeStyle: "black",
+			lineWidth: 0
+			},
+		collisionFilter: {
+				group: 1
+			}
+		});
 	renderArray.push(ground6)
 	deathGround = Matter.Bodies.rectangle(3000, 1500, 10000,200, {
 		isSensor: true,
@@ -182,26 +210,67 @@ function gameInit() {
 	})
 	renderArray.push(deathGround)
 	detector = Matter.Detector.create({
-		bodies: [player.body,deathGround,finishGround]
+		bodies: [player.body,deathGround,ground6, roof5]
 	});	
+
+	let instruction1 = Matter.Bodies.rectangle(700,780,1,1,{
+		isStatic: true,
+		label: "decoration",
+		render: {				
+			sprite: {
+				texture: "./projects/Oscilum/instructions1.png",
+				yScale: 2,
+				xScale:2						
+			} 
+		}			
+}); 
+	let instruction2 = Matter.Bodies.rectangle(1300,780,1,1,{
+		isStatic: true,
+		label: "decoration",
+		render: {				
+			sprite: {
+				texture: "./projects/Oscilum/instructions2.png",
+				yScale: 2,
+				xScale:2						
+			} 
+		}			
+}); 
+	let instruction3 = Matter.Bodies.rectangle(2400,780,1,1,{
+		isStatic: true,
+		label: "decoration",
+		render: {				
+			sprite: {
+				texture: "./projects/Oscilum/instructions3.png",
+				yScale: 2,
+				xScale:2						
+			} 
+		}			
+}); 
+
+	renderArray.push(instruction1)
+	renderArray.push(instruction2)
+	renderArray.push(instruction3)
 
 	canvas.addEventListener('mousedown', shoot);
 	canvas.addEventListener('mouseup', recover);
 	
 
 	Matter.Composite.add(engine.world,renderArray);
+	lookout1 = new Lookout(2400,652, 2000 ,200,4000,1000)
 	Matter.Runner.start(runner, engine);
 	Matter.Render.run(render);
 
 	Matter.Events.on(render, 'beforeRender', function() {     
     
       // center view at player 
-	   	Matter.Bounds.shift(render.bounds,
-	    {
-	        x: (player.body.position.x - (render.bounds.max.x-render.bounds.min.x) / 2),
-	        y: (player.body.position.y - (render.bounds.max.y-render.bounds.min.y) / 2)
-	    });
-    });
+   if(!looked) { 
+   	Matter.Bounds.shift(render.bounds,
+    {
+        x: (player.body.position.x - (render.bounds.max.x-render.bounds.min.x) / 2),
+        y: (player.body.position.y - (render.bounds.max.y-render.bounds.min.y) / 2)
+    	});
+    }
+	});
 
 	Matter.Events.on(engine, 'beforeUpdate', function() {
 
@@ -234,7 +303,7 @@ function gameInit() {
 		let scenarioAux, projectileAux;
     
     for (var i = 0; i < pairs.length; i++) {
-      var pair = pairs[i];        
+      var pair = pairs[i];  
       if(pair.bodyA.label=="noGravity" || pair.bodyB.label=="noGravity") {
         	if(pair.bodyA.label=="noGravity") {
         		scenarioAux=pair.bodyB;
@@ -277,9 +346,11 @@ function gameInit() {
 				detectorCollision=true
 			}			
 			if((pair.bodyA.label=="player" && pair.bodyB.label=="scenario")||(pair.bodyB.label=="player" && pair.bodyA.label=="scenario")) {
-				playerCollision=true 				
-				
+				playerCollision=true	
 			}	
+			if((pair.bodyA.label=="player" || pair.bodyB.label=="player") && (pair.bodyA.label=="lookout" || pair.bodyB.label=="lookout")) {
+				lookoutCollision=true
+			}			
 		}
 		if(detectorCollision && playerCollision) {
 			touchingGround=true			
@@ -291,6 +362,9 @@ function gameInit() {
 			var pair = pairs[i];
 			if((pair.bodyA.label=="player" && pair.bodyB.label=="scenario")||(pair.bodyB.label=="player" && pair.bodyA.label=="scenario")) {
 				touchingGround=false 				
+			}
+			if((pair.bodyA.label=="player" || pair.bodyB.label=="player") && (pair.bodyA.label=="lookout" || pair.bodyB.label=="lookout")) {
+				lookoutCollision=false				
 			}
 		}		
 	})	
@@ -319,7 +393,7 @@ function loop(currentTime) {
 
 	//if(deltaTime > frameTime) {		
 	//console.log(render.bounds)
-	if(state.pressedKeys.S) {
+	/*if(state.pressedKeys.S) {
 		Matter.Render.lookAt(render, {
         min: {y:render.bounds.min.y-20, x:render.bounds.min.x-20},
         max: {y:render.bounds.max.y+20, x:render.bounds.max.x+20},
@@ -332,6 +406,16 @@ function loop(currentTime) {
         max: {y:render.bounds.max.y-20, x:render.bounds.max.x-20},
     	});
 		
+	}*/
+	if(!looked && lookoutCollision && state.pressedKeys.E) {
+		lookout1.lookAt()
+		Matter.Body.setVelocity(player.body,{x:0,y:0})
+		Matter.Body.setAngularVelocity(player.body,0)
+		looked=true
+	}
+	if(looked && (!lookoutCollision || !state.pressedKeys.E)) {
+		looked=false
+		lookout1.unLookAt()
 	}
 
 	prevTime = currentTime
@@ -350,17 +434,19 @@ function update(deltaTime){
 
 	var detectorList;
 	if(!dying && !win) detectorList = Matter.Detector.collisions(detector)
-	if(!dying && !win && detectorList.length!=0) {	
-		if((detectorList[0].bodyA.label=="deathGround"|| detectorList[0].bodyB.label=="deathGround") && detectorList[0].collided) {			
-			dying=true;
-		}		
-		if((detectorList[0].bodyA.label=="finish"|| detectorList[0].bodyB.label=="finish") && detectorList[0].collided) {			
-			win=true;
-			victorySound.play()
-		  victory()
+	if(!dying && !win && detectorList.length!=0) {
+		for(var i=0; i<detectorList.length; ++i) {
+			if((detectorList[i].bodyA.label=="deathGround"|| detectorList[i].bodyB.label=="deathGround") && detectorList[i].collided) {			
+				dying=true;
+			}		
+			if((detectorList[i].bodyA.label=="finish"|| detectorList[i].bodyB.label=="finish") && detectorList[i].collided) {			
+				win=true;
+				victorySound.play()
+			  victory()
+			}
 		}
 	}
-	if(!dying && !win) {		
+	if(!dying && !win && !looked) {		
 		if(!hookDeployed && touchingGround && state.pressedKeys.A) {	
 
 			Matter.Body.setVelocity(player.body,{x:-6,y:0})
@@ -403,7 +489,8 @@ function update(deltaTime){
 			Matter.Detector.clear(detector)
 			Matter.Composite.remove(engine.world,player.body)
 			player = new Player(650,200, 20, "red")		
-			Matter.Detector.setBodies(detector, [player.body,deathGround,finishGround]);			
+			//player= new Player(4000,970,20, "blue")
+			Matter.Detector.setBodies(detector, [player.body,deathGround,finishGround, roof5,ground6]);			
 
 			//Matter.Composite.add(engine.world,player.body)
 
