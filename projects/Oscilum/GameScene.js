@@ -107,26 +107,13 @@ function gameInit() {
 		isStatic:true,
 		label: "scenario",
 		render: {
-			fillStyle: "white",
-			strokeStyle: "black",
-			lineWidth: 0
+			fillStyle: "white"
 			},
 		collisionFilter: {
 				group: 1
 			}
 		};	
-	var scenarioOptions2 = {
-		isStatic:true,
-		label: "scenario",
-		render: {
-			fillStyle: "orange",
-			strokeStyle: "black",
-			lineWidth: 0
-		},
-		collisionFilter: {
-				group: 1
-			}
-		};		
+
 	let ground = Matter.Bodies.rectangle(700,780,500,280,scenarioOptions);
 	renderArray.push(ground)
 	let roof = Matter.Bodies.rectangle(3200,50,5000,600,scenarioOptions);
@@ -137,7 +124,16 @@ function gameInit() {
 	renderArray.push(ground2)
 	let ground3 = Matter.Bodies.rectangle(700+600+1000,780,500,280,scenarioOptions);
 	renderArray.push(ground3)
-	let support = Matter.Bodies.rectangle(700+600+550,350,100,50,scenarioOptions);
+	let support = Matter.Bodies.rectangle(700+600+550,350,100,50,{
+		isStatic:true,
+		label: "scenario",
+		render: {
+			fillStyle: "orange"
+			},
+		collisionFilter: {
+				group: 1
+			}
+		});
 	renderArray.push(support)
 	let roof3 = Matter.Bodies.rectangle(3500,250,500,600,scenarioOptions);
 	renderArray.push(roof3)
@@ -213,7 +209,7 @@ function gameInit() {
 		bodies: [player.body,deathGround,ground6, roof5]
 	});	
 
-	let instruction1 = Matter.Bodies.rectangle(700,780,1,1,{
+	let instruction1 = Matter.Bodies.rectangle(700,780,400,200,{
 		isStatic: true,
 		label: "decoration",
 		render: {				
@@ -224,7 +220,7 @@ function gameInit() {
 			} 
 		}			
 }); 
-	let instruction2 = Matter.Bodies.rectangle(1300,780,1,1,{
+	let instruction2 = Matter.Bodies.rectangle(1300,780,400,200,{
 		isStatic: true,
 		label: "decoration",
 		render: {				
@@ -235,7 +231,7 @@ function gameInit() {
 			} 
 		}			
 }); 
-	let instruction3 = Matter.Bodies.rectangle(2400,780,1,1,{
+	let instruction3 = Matter.Bodies.rectangle(2400,780,400,200,{
 		isStatic: true,
 		label: "decoration",
 		render: {				
