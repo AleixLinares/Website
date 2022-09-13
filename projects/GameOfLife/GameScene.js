@@ -3,7 +3,7 @@ var prevTime=0;
 var currentTime;
 var deltaTime=0;
 let matrix=[], changes=[], matrixAux=[];
-let minX, minY, maxX, maxY, difX, difY, sizeX, sizeY, drawGrid=false, moving=false, animate=false, pressed=false,width,height;
+let minX, minY, maxX, maxY, difX, difY, sizeX, sizeY, moving=false, animate=false, pressed=false,width,height;
 const delta = 6;
 let startX;
 let startY;
@@ -166,8 +166,7 @@ function gameInit() {
 	if(maxX>=sizeX) maxX=sizeX
 	if(maxY>=sizeY) maxY=sizeY
 	if(minX<0) minX=0
-	if(minY<0) minY=0
-	drawGrid=true
+	if(minY<0) minY=0	
 	difX=maxX-minX
 	difY=maxY-minY
 	size=width/(maxX-minX)
@@ -214,32 +213,27 @@ function loop(currentTime) {
 		minX++
 		canmove=true
 		moving=true
-		drawGrid=true
 	}
 	if(state.pressedKeys.A && minX>0) {
 		maxX--
 		minX--
 		canmove=true
 		moving=true
-		drawGrid=true
 	}
 	if(state.pressedKeys.W && minY>0) {
 		maxY--
 		minY--		
 		canmove=true
 		moving=true
-		drawGrid=true
 	}
 	if(state.pressedKeys.S && maxY<sizeY-1) {
 		maxY++
 		minY++
 		canmove=true
 		moving=true
-		drawGrid=true
 	}
 
-	if(!canmove) moving=false
-	frames++
+	if(!canmove) moving=false	
 	if(state.pressedKeys.enter && !pressed) {
 		pressed=true
 		animate=!animate
@@ -282,22 +276,18 @@ function update(){
 }
 function draw() {	
 
-	if(drawGrid) {
-		difX=maxX-minX
-		difY=maxY-minY
-		grid()
-		drawGrid=false
-	}
+	difX=maxX-minX
+	difY=maxY-minY	
+	grid()	
 
 	if(changes.length!=0) {
-		for(var i=0; i<changes.length; ++i) {			
-			context.clearRect((changes[i].x-minX)*size,(changes[i].y-minY)*size, size, size)
+		for(var i=0; i<changes.length; ++i) {						
 			context.beginPath()
-			context.rect((changes[i].x-minX)*size, (changes[i].y-minY)*size, size,size)						
+			context.rect((changes[i].x-minX)*size+1, (changes[i].y-minY)*size+1, size-1,size-1)						
 			if(matrix[(changes[i].x)][(changes[i].y)]==0) context.fillStyle="#EEEEEE"
 			else context.fillStyle="#000000"					
 			context.fill()
-			context.lineWidth = 0.5;
+			context.lineWidth = 1;
 			context.strokeStyle = "#000000";
 			context.stroke();
 			context.closePath();
