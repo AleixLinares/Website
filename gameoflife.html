@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="index.css" />	
+	<title>Game Of Life</title>
+</head>
+<body>
+	<ul id="nav">
+		<li id="home"><a href="index">Home</a></li>
+		<li id="projects" class="active">
+			<a href="">Projects</a>							
+			<ul>	
+				<li><a class="li-list" href="pongGame">Pong</a>
+				<li><a class="li-list" href="snakeGame">Snake</a>	
+				<li><a class="li-list" href="Oscilum">Oscilum</a>	
+				<li><a class="li-list" href="gameoflife">Game Of Life</a>
+				<li><a class="li-list" href="">More Coming Soon...</a>			
+			</ul>	
+		</li>
+		<li id="contact"><a  href="contact">Contact</a></li>
+	</ul>
+	<div id="load">words</div>
+	<div class="gameContainer" id="gameContainer">
+		<canvas class="gameContainer" id="canvas" style="background:  #EEEEEE;border-style: solid;border-width: 1px;" width="1400" height="700">></canvas>
+	</div>
+	<div class="bigTextContainer">
+		<div class="textContainer" style="text-align: center;">
+			<p> John Conway's Game of Life </p>
+			<p style="text-decoration: underline"> Controls </p>
+			<p>	Use the mouse to add or remove cells by left clicking </p>
+			<p>	Zoom in or out with mouse wheel </p>
+			<p>	Move the camera with W,A,S,D </p>
+			<p>	Press enter to start and stop the simulation. While active you can not place or remove cells </p>
+		</div>		
+	</div>	
+	
+
+</body>
+</html>
+<script type="text/javascript" src="./header.js"></script>
+<script type="text/javascript" src="./projects/GameOfLife/GameScene.js" defer></script>
+<script type="text/javascript" src="./projects/GameOfLife/MenuScene.js" defer></script>

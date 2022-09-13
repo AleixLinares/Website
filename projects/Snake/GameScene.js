@@ -57,19 +57,6 @@ function gameInit() {
 	var w_size= 40
 	var h_size= 20
 
-	for(var i=0; i<w_size; ++i) {		
-		for(var j=0; j<h_size; ++j) {
-			context.beginPath()
-			context.rect(i*35, j*35, 35,35)						
-			context.fillStyle="red"						
-			context.fill()
-			context.lineWidth = 2;
-			context.strokeStyle = "black";
-			context.stroke();
-			context.closePath();
-		}		
-	}
-
 	matrix = Array.from(new Array(20), () => new Array(40).fill(0))
 
 	snake = new Snake();
