@@ -3,7 +3,7 @@ var prevTime=0;
 var currentTime;
 var deltaTime=0;
 let matrix=[], changes=[], matrixAux=[];
-let minX, minY, maxX, maxY, difX, difY, sizeX, sizeY, moving=false, animate=false, pressed=false,width,height;
+let minX, minY, maxX, maxY, difX, difY, sizeX, sizeY, moving=false, animate=false, pressed=false,width,height, showGrid=true;
 const delta = 6;
 let startX;
 let startY;
@@ -19,7 +19,9 @@ var state = {
     D: false,
     A: false,
     W: false,
-    S: false
+    S: false,
+    E: false,
+    R: false
   }
 }
 
@@ -31,12 +33,15 @@ var keyMap = {
   87: 'W',
   83: 'S',
   65: 'A',
-  68: 'D'
-
+  68: 'D',
+  69: 'E',
+  82: 'R'
 }
 function keydown(event) {
-  var key = keyMap[event.keyCode] 
-  state.pressedKeys[key] = true 
+	if(!event.repeat) {
+  	var key = keyMap[event.keyCode] 
+ 	 	state.pressedKeys[key] = true 
+  }  
 }
 function keyup(event) {
   var key = keyMap[event.keyCode]
@@ -234,14 +239,20 @@ function loop(currentTime) {
 	}
 
 	if(!canmove) moving=false	
-	if(state.pressedKeys.enter && !pressed) {
-		pressed=true
+	if(state.pressedKeys.enter) {
 		animate=!animate
+		state.pressedKeys.enter=false
 	}
-	else if(!state.pressedKeys.enter && pressed) {
-		pressed=false
+	if(state.pressedKeys.E) {
+		showGrid=!showGrid
+		state.pressedKeys.E=false
 	}
-		
+	if(state.pressedKeys.R) {
+		matrix = Array.from(new Array(sizeX), () => new Array(sizeY).fill(0))
+		matrixAux= JSON.parse(JSON.stringify(matrix))
+		state.pressedKeys.R=false
+	}
+			
 	if(animate) update()
 	draw()
 		
@@ -340,21 +351,23 @@ function count(i,j) {
 
 function grid() {
 	context.clearRect(0,0,width,height)
-	for(var i=0; i<difX; ++i) {
-		context.beginPath()
-		context.moveTo(i*size,0)
-		context.lineTo(i*size, height);
-		context.lineWidth = 1;
-		context.strokeStyle = "#000000";
-		context.stroke();
-	}	
-	for(var j=0; j<difY; ++j) {	
+	if(showGrid) {
+		for(var i=0; i<difX; ++i) {
 			context.beginPath()
-			context.moveTo(0,j*size)
-			context.lineTo(width, j*size);
+			context.moveTo(i*size,0)
+			context.lineTo(i*size, height);
 			context.lineWidth = 1;
 			context.strokeStyle = "#000000";
 			context.stroke();
+		}	
+		for(var j=0; j<difY; ++j) {	
+				context.beginPath()
+				context.moveTo(0,j*size)
+				context.lineTo(width, j*size);
+				context.lineWidth = 1;
+				context.strokeStyle = "#000000";
+				context.stroke();
+		}
 	}
 	for(var i=0; i<matrix.length; ++i) {
 		for(var j=0; j<matrix[0].length; ++j) {												
