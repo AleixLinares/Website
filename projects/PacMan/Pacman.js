@@ -115,7 +115,7 @@ class Pacman {
 			else if(this.looking=="down") {
 				if(state.pressedKeys.W) {
 					this.y-=despl
-					//state.pressedKeys.W=false
+					state.pressedKeys.W=false
 					this.looking="up"
 				}
 				else this.y+=despl
@@ -141,87 +141,11 @@ class Pacman {
 				this.j=(this.x-sizeH/2)/sizeH				
 				this.i=(this.y-sizeW/2)/sizeW
 			}
-
-
-		}
-
-
-			/*var destination={i:this.i,j:this.j}
-			if(state.pressedKeys.W) {
-				destination={i:this.i-1,j:this.j}
-				if(matrix[destination.i][destination.j]==1)  {
-					followDirection=true				
-				}
-				else {
-					followDirection=false
-					this.looking="up"
-				}
-				
-			}
-			if(state.pressedKeys.S) {
-				destination={i:this.i+1,j:this.j}
-				if(matrix[destination.i][destination.j]==1)  {
-					followDirection=true				
-				}
-				else {
-					followDirection=false					
-					this.looking="down"
-				}
-				
-			}
-			if(state.pressedKeys.D) {
-				destination={i:this.i,j:this.j+1}
-				if(matrix[destination.i][destination.j]==1)  {
-					followDirection=true				
-				}
-				else {
-					followDirection=false
-					this.looking="right"
-				}
-				
-			}
-			if(state.pressedKeys.A) {
-				destination={i:this.i,j:this.j-1}
-				if(matrix[destination.i][destination.j]==1)  {
-					followDirection=true				
-				}
-				else {
-					followDirection=false
-					this.looking="left"
-				}
-				
-			}
-			if(followDirection){
-				if(this.looking=="up") destination={i:this.i-1, j: this.j}
-				if(this.looking=="down") destination={i:this.i+1, j: this.j}
-				if(this.looking=="left") destination={i:this.i, j: this.j-1}
-				if(this.looking=="right") destination={i:this.i, j: this.j+1}	
-			}
-			if(matrix[destination.i][destination.j]!=1) {			
-				if(destination.i==14 && destination.j==0) {
-					destination={i:14, j: 27}
-					this.looking="left"
-				}
-				else if(destination.i==14 && destination.j==27) {
-					destination={i:14, j: 0}
-					this.looking="right"						
-				}
-				this.i=destination.i
-				this.j=destination.j
-				followDirection=true	
-			}*/
-			
-		
-			
+		}	
 	}
 
 	draw() {
-
-		/*context.beginPath()
-		context.arc( this.x,this.y, 20,0,2 * Math.PI)
-		context.fillStyle="#FFFF00"	
-		context.fill()
-		context.closePath();*/
+		
 		if(this.looking=="right") {
 			context.beginPath();
 			context.arc(this.x,this.y, 20, 0.25 * Math.PI, 1.25 * Math.PI, false);

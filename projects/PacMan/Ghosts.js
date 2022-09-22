@@ -231,8 +231,7 @@ class Ghost {
 		else {
 			context.globalAlpha = 1;
 			context.fillStyle= context.drawImage(this.img, this.x-sizeH/2-6,this.y-sizeW/2-6, 40, 40);
-		}
-		//context.fill()		
+		}				
 		context.closePath();
 		/*for(var i=1; i<this.path.length; ++i) {			
 			context.beginPath();

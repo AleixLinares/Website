@@ -1,5 +1,5 @@
 var frameTime = 1000/60, frames=0, escPressed=false, pinkyDest,inkyDest, inkyTest, score=0, dots=0, timeControl=0,frightenedTimeControl=0, gameMode="scatter", oldgameMode="scatter"
-var prevTime=0, once=false, lives=3, killed=false,restarted=false, inkyTime=0, clydeTime=0;
+var prevTime=0, once=false, lives=3, killed=false,restarted=false, inkyTime=0, clydeTime=0, startTime=null;
 var currentTime;
 var deltaTime=0;
 let matrix=[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -117,13 +117,18 @@ function gameInit() {
 	[1,6,2,6,2,2,2,2,2,2,2,2,6,2,2,6,2,2,2,2,2,2,2,2,2,2,6,1],
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
 	restarted=false
+	killed=false
 	lives=3
+	timeControl=0
+	frightenedTimeControl=0
+	gameMode="scatter"
+	oldgameMode="scatter"
 	width= canvas.width
 	height = canvas.height
 	sizeW=height/(sizeY)  
-    sizeH=width/(sizeX) 
-    score=0
-    dots=0
+  sizeH=width/(sizeX) 
+  score=0
+  dots=0
  
 	window.addEventListener("keydown", keydown, false)
 	window.addEventListener("keyup", keyup, false)
@@ -133,10 +138,12 @@ function gameInit() {
 }
 
 function loop(currentTime) {
-	console.log(gameMode)
+	
 	//console.log(deltaTime)
-	deltaTime = currentTime - prevTime
-	prevTime= currentTime 	
+	if (!startTime) startTime = currentTime;
+	deltaTime = currentTime - prevTime - startTime
+	prevTime= currentTime - startTime
+
 
 	if(restarted) {
 		inkyTime+=deltaTime
@@ -188,7 +195,7 @@ function loop(currentTime) {
 		if(pinky.mode!="ded" && pinky.mode!="start")pinky.changeMode(oldgameMode)
 		gameMode=oldgameMode
 	}		
-
+	console.log([gameMode, timeControl])	
 	if(timeControl>20000 && gameMode=="chase") {
 		timeControl-=20000
 		if(inky.mode!="ded" && inky.mode!="start") inky.changeMode("scatter")
@@ -206,7 +213,6 @@ function loop(currentTime) {
 		gameMode="chase"
 	}
 	//if(deltaTime > frameTime) {	
-
 	//console.log("FPS: " +1/deltaTime*1000)
 	update(deltaTime)
 	if(killed) lives--
@@ -514,13 +520,22 @@ function restart(event) {
 
 function startConfig() {
 	pacman = new Pacman()
-    blinky = new Blinky()
-    inky = new Inky()
-    pinky = new Pinky()
-    clyde = new Clyde()
-    killed=false
+	blinky = new Blinky()
+	inky = new Inky()
+	pinky = new Pinky()
+	clyde = new Clyde()
+	killed=false
+	timeControl=0
+	frightenedTimeControl=0
+	inkyTime=0
+	clydeTime=0
+	deltaTime=0
+	prevTime=0
+	startTime=null
+	gameMode="scatter"
+	oldgameMode="scatter"
 
-    blinky.changeMode("scatter")
+  blinky.changeMode("scatter")
 	pinky.changeMode("scatter")
 	setTimeout(draw,100)
 
