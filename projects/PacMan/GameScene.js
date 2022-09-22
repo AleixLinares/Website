@@ -194,8 +194,8 @@ function loop(currentTime) {
 		if(blinky.mode!="ded" && blinky.mode!="start")blinky.changeMode(oldgameMode)
 		if(pinky.mode!="ded" && pinky.mode!="start")pinky.changeMode(oldgameMode)
 		gameMode=oldgameMode
-	}		
-	console.log([gameMode, timeControl])	
+	}	
+	
 	if(timeControl>20000 && gameMode=="chase") {
 		timeControl-=20000
 		if(inky.mode!="ded" && inky.mode!="start") inky.changeMode("scatter")
