@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="index.css" />	
+	<title>Pac-Man</title>
+</head>
+<body>
+	<ul id="nav">
+		<li id="home"><a href="index">Home</a></li>
+		<li id="projects" class="active">
+			<a href="">Projects</a>							
+			<ul>	
+				<li><a class="li-list" href="pongGame">Pong</a>
+				<li><a class="li-list" href="snakeGame">Snake</a>	
+				<li><a class="li-list" href="Oscilum">Oscilum</a>	
+				<li><a class="li-list" href="gameoflife">Game Of Life</a>
+				<li><a class="li-list" href="pacman">Pac-Man</a>
+				<li><a class="li-list" href="">More Coming Soon...</a>			
+			</ul>	
+		</li>
+		<li id="contact"><a  href="contact">Contact</a></li>
+	</ul>
+	<div id="load">words</div>
+	<div class="gameContainer">
+		<canvas class="gameContainer" id="canvas2" style="background:  #000000;border-style: solid;border-width: 1px;" width="784" height="50">></canvas>
+	</div>
+	<div class="gameContainer" >
+		<canvas class="gameContainer" id="canvas" style="background:  #000000;border-style: solid;border-width: 1px;" width="784" height="868">></canvas>
+	</div>	
+		
+	<div class="bigTextContainer">
+		<div class="textContainer" style="text-align: center;">
+			<p> PacMan using A*. First I implemented the A* algorithm so I can use it in different projects and then I started to work in this game. I made 
+			this game as faithfully as possible to the original, mainly reproducing the ghost AI and respecting the times </p>		
+		</div>		
+	</div>
+	<img hidden id="layout" src="./projects/PacMan/pacmanLayout.png">
+	<img hidden id="blinky" src="./projects/PacMan/blinky.png">
+	<img hidden id="pinky" src="./projects/PacMan/pinky.png">
+	<img hidden id="inky" src="./projects/PacMan/inky.png">
+	<img hidden id="clyde" src="./projects/PacMan/clyde.png">
+	<img hidden id="scared" src="./projects/PacMan/scared.png">	
+
+	
+
+</body>
+</html>
+<script type="text/javascript" src="./header.js"></script>
+<script type="text/javascript" src="./projects/PacMan/Ghosts.js" defer></script>
+<script type="text/javascript" src="./projects/PacMan/Pacman.js" defer></script>
+<script type="text/javascript" src="./projects/PacMan/AStar.js" defer></script>
+<script type="text/javascript" src="./projects/PacMan/GameScene.js" defer></script>
+<script type="text/javascript" src="./projects/PacMan/MenuScene.js" defer></script>
